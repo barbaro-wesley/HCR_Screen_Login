@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Para redirecionar
 import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; 
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'; 
 import { auth } from './firebase'; // Importa o auth configurado
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import logo from './assets/HCR_Marca png.png';
+import { setPersistence, browserSessionPersistence } from 'firebase/auth';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -12,18 +14,34 @@ function Login() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate(); // Para redirecionar o usuário
+
+  // Verificar se o usuário já está logado ao carregar a página
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Se o usuário estiver logado, redirecionar para a página inicial
+        navigate('/home'); 
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+  
     try {
-      // Aqui você já pode usar o `auth` importado de `firebase.js`
+      // Definir a persistência para que expire ao recarregar a página (session ou none)
+      await setPersistence(auth, browserSessionPersistence);
+      
+      // Agora faz o login do usuário
       await signInWithEmailAndPassword(auth, email, password);
-      // Login bem-sucedido, redirecione ou faça outra ação
+      
       console.log("Login bem-sucedido");
+      navigate('/home'); // Redireciona para a página inicial após o login
     } catch (error) {
-      // Lidando com erros específicos
       console.log("Erro completo:", error);
       switch (error.code) {
         case 'auth/user-not-found':
@@ -46,7 +64,6 @@ function Login() {
     }
   };
 
-  // Função para alternar visibilidade da senha
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -95,9 +112,7 @@ function Login() {
       </div>
       <div className="sidebar">
         <h3>Connecting Talent to Opportunities</h3>
-        <p>
-          Sistema de Analise de dados desenvolvido pelo setor de TI  do Hospital Cristo Redentor!
-        </p>
+        <p>Sistema de Análise de dados desenvolvido pelo setor de TI do Hospital Cristo Redentor!</p>
       </div>
     </div>
   );
