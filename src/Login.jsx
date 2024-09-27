@@ -96,7 +96,7 @@ function Login() {
       <div className="sidebar">
         <h3>Connecting Talent to Opportunities</h3>
         <p>
-          Discover endless opportunities on FreelanceConnect, where talented freelancers and businesses unite. Jump right in with us!
+          Sistema de Analise de dados desenvolvido pelo setor de TI  do Hospital Cristo Redentor!
         </p>
       </div>
     </div>
